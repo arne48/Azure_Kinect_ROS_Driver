@@ -300,15 +300,15 @@ K4AROSDevice::K4AROSDevice(const NodeHandle& n, const NodeHandle& p)
   ci_mngr_ir_ = std::make_shared<camera_info_manager::CameraInfoManager>(node_ir_, calibration_file_name_ir, calibration_url_ir);
 
 #if defined(K4A_BODY_TRACKING)
-  if (params_.body_tracking_enabled) {    
+  if (params_.body_tracking_enabled) {
     tfListener = new tf2_ros::TransformListener(tfBuffer);
     body_marker_publisher_ = node_.advertise<MarkerArray>("body_tracking_data", 1);
 
     body_index_map_publisher_ = image_transport_.advertise("body_index_map/image_raw", 1);
 
     image_subscriber_ = image_transport_.subscribeCamera("rgb/image_raw", 1, &K4AROSDevice::imageCallback, this);
-    image_tf_publisher_ = image_transport_.advertise("image_tf", 1); 
-  
+    image_tf_publisher_ = image_transport_.advertise("image_tf", 1);
+
   }
 #endif
 }
@@ -789,7 +789,7 @@ k4a_result_t K4AROSDevice::getImuFrame(const k4a_imu_sample_t& sample, sensor_ms
 }
 
 #if defined(K4A_BODY_TRACKING)
-k4a_result_t K4AROSDevice::getBodyMarker(const k4abt_body_t& body, MarkerPtr marker_msg, geometry_msgs::TransformStamped& transform_msg, int bodyNum, int jointType,
+k4a_result_t K4AROSDevice::getBodyMarker(const k4abt_body_t& body, MarkerPtr marker_msg, geometry_msgs::TransformStamped& transform_msg, int jointType,
                                          ros::Time capture_time)
 {
   k4a_float3_t position = body.skeleton.joints[jointType].position;
@@ -851,7 +851,7 @@ k4a_result_t K4AROSDevice::getBodyMarker(const k4abt_body_t& body, MarkerPtr mar
 
   transform_msg.header.stamp = capture_time;
   transform_msg.header.frame_id = rgb_frame;
-  transform_msg.child_frame_id = joint_names_[jointType] + std::to_string(bodyNum);
+  transform_msg.child_frame_id = joint_names_[jointType] + std::to_string(body.id);
 
   transform_msg.transform.translation.x = pose_msg.position.x;
   transform_msg.transform.translation.y = pose_msg.position.y;
@@ -883,11 +883,13 @@ void K4AROSDevice::imageCallback(const sensor_msgs::ImageConstPtr& image_msg, co
 
   std::vector<std::string> frame_ids_;
   for(int i = 0; i < num_bodies; ++i){
-      std::transform(joint_names_.begin(), joint_names_.end(), back_inserter(frame_ids_), [&i](std::string j){return j + std::to_string(i);});    
+      std::transform(joint_names_.begin(), joint_names_.end(), back_inserter(frame_ids_), [&i](std::string j){return j + std::to_string(i);});
   }
 
   for(const std::string frame_id: frame_ids_) {
-    
+    if(frame_id.back() == '0')
+      continue;
+
     geometry_msgs::TransformStamped transform_msg;
     try{
 
@@ -1342,7 +1344,6 @@ void K4AROSDevice::bodyPublisherThread()
         if (body_marker_publisher_.getNumSubscribers() > 0)
         {
           // Joint marker array
-          
           MarkerArrayPtr markerArrayPtr(new MarkerArray);
           std::vector<geometry_msgs::TransformStamped> transformArrary;
           num_bodies = body_frame.get_num_bodies();
@@ -1353,14 +1354,14 @@ void K4AROSDevice::bodyPublisherThread()
             for (int j = 0; j < (int) K4ABT_JOINT_COUNT; ++j)
             {
               MarkerPtr markerPtr(new Marker);
-              geometry_msgs::TransformStamped transform_msg; 
-              getBodyMarker(body, markerPtr, transform_msg, i, j, capture_time);
+              geometry_msgs::TransformStamped transform_msg;
+              getBodyMarker(body, markerPtr, transform_msg, j, capture_time);
               markerArrayPtr->markers.push_back(*markerPtr);
               transformArrary.push_back(std::move(transform_msg));
             }
           }
           body_marker_publisher_.publish(markerArrayPtr);
-          br.sendTransform(transformArrary); 
+          br.sendTransform(transformArrary);
         }
 
         if (body_index_map_publisher_.getNumSubscribers() > 0)
@@ -1609,7 +1610,7 @@ void K4AROSDevice::updateTimestampOffset(const std::chrono::microseconds& k4a_de
   if (device_to_realtime_offset_.count() == 0 ||
       std::abs((device_to_realtime_offset_ - device_to_realtime).count()) > 1e7)
   {
-    ROS_WARN_STREAM("Initializing or re-initializing the device to realtime offset: " << device_to_realtime.count()
+    ROS_DEBUG_STREAM("Initializing or re-initializing the device to realtime offset: " << device_to_realtime.count()
                                                                                       << " ns");
     device_to_realtime_offset_ = device_to_realtime;
   }
