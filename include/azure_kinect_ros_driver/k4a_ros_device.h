@@ -70,7 +70,7 @@ class K4AROSDevice
   k4a_result_t getIrFrame(const k4a::capture& capture, sensor_msgs::ImagePtr& ir_image);
 
 #if defined(K4A_BODY_TRACKING)
-k4a_result_t getBodyMarker(const k4abt_body_t& body, visualization_msgs::MarkerPtr marker_msg, geometry_msgs::TransformStamped& transform_msg, int bodyNum, int jointType,
+k4a_result_t getBodyMarker(const k4abt_body_t& body, visualization_msgs::MarkerPtr marker_msg, geometry_msgs::TransformStamped& transform_msg, int jointType,
                              ros::Time capture_time);
 
   k4a_result_t getBodyIndexMap(const k4abt::frame& body_frame, sensor_msgs::ImagePtr body_index_map_image);
@@ -178,7 +178,7 @@ k4a_result_t getBodyMarker(const k4abt_body_t& body, visualization_msgs::MarkerP
   std::atomic_int16_t k4abt_tracker_queue_size_;
   std::thread body_publisher_thread_;
   
-  std::vector<std::string> joint_names_{"Pelvis", "Spine_Naval", "Spine_Chest", "Neck", "Clavicle_left", "Shoulder_left", "Elbow_left", "Wrist_left", "Hand_left", "Handtip_left", "thumb_left", "Clavicle_right", "Shoulder_right", "Elbow_right", "Wrist_right", "Hand_right", "Handtip_right", "Thumb_right", "Hip_left", "Knee_left", "Ankle_left", "Foot_left", "Hip_right", "Knee_right", "Ankle_right", "Foot_right", "Head", "Nose", "Eye_Left", "Ear_Left", "Eye_Right", "Ear_Right"};
+  std::vector<std::string> joint_names_{"Pelvis", "Spine_Naval", "Spine_Chest", "Neck", "Clavicle_left", "Shoulder_left", "Elbow_left", "Wrist_left", "Hand_left", "Handtip_left", "Thumb_left", "Clavicle_right", "Shoulder_right", "Elbow_right", "Wrist_right", "Hand_right", "Handtip_right", "Thumb_right", "Hip_left", "Knee_left", "Ankle_left", "Foot_left", "Hip_right", "Knee_right", "Ankle_right", "Foot_right", "Head", "Nose", "Eye_left", "Ear_left", "Eye_right", "Ear_right"};
   size_t num_bodies;
 #endif
 
