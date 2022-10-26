@@ -4,7 +4,7 @@ Licensed under the MIT License.
 -->
 
 <launch>
-    <include file="$(find azure_kinect_ros_driver)/launch/driver.launch">
+    <include file="$(find azure_kinect_ros_driver)/launch/kinect_rgbd.launch">
         <arg name="body_tracking_enabled" value="true" />
     </include>
 </launch>

@@ -4,8 +4,8 @@
   <arg name="camera" default="k4a" />
 
   <!-- publish Azure Kinect coordiante frames -->
-  <arg name="tf_prefix"         default="" />                       <!-- Prefix added to tf frame IDs. It typically contains a trailing '_' unless empty. -->
-  <arg name="overwrite_robot_description" default="true" />         <!-- Flag to publish a standalone azure_description instead of the default robot_descrition parameter-->
+  <arg name="tf_prefix"         default="azure_" />                       <!-- Prefix added to tf frame IDs. It typically contains a trailing '_' unless empty. -->
+  <arg name="overwrite_robot_description" default="false" />         <!-- Flag to publish a standalone azure_description instead of the default robot_descrition parameter-->
 
   <group if="$(arg overwrite_robot_description)">
     <param name="robot_description"
@@ -28,7 +28,7 @@
   <arg name="depth_registration" default="true"
        doc="Hardware depth registration" />
 
-  <arg name="num_worker_threads" default="4"
+  <arg name="num_worker_threads" default="8"
        doc="Worker threads for the nodelet manager" />
 
 
@@ -37,12 +37,12 @@
              The colour and depth images are processed via 'rgbd_launch' and point clouds are generated via
              'image_proc' using the manual camera calibration. -->
   <arg name="depth_enabled"               default="true" />           <!-- Enable or disable the depth camera -->
-  <arg name="depth_mode"                  default="NFOV_UNBINNED" />  <!-- Set the depth camera mode, which affects FOV, depth range, and camera resolution. See Azure Kinect documentation for full details. Valid options: NFOV_UNBINNED, NFOV_2X2BINNED, WFOV_UNBINNED, WFOV_2X2BINNED, and PASSIVE_IR -->
+  <arg name="depth_mode"                  default="NFOV_2X2BINNED" />  <!-- Set the depth camera mode, which affects FOV, depth range, and camera resolution. See Azure Kinect documentation for full details. Valid options: NFOV_UNBINNED, NFOV_2X2BINNED, WFOV_UNBINNED, WFOV_2X2BINNED, and PASSIVE_IR -->
   <arg name="depth_unit"                  default="16UC1" />          <!-- Depth distance units. Options are: "32FC1" (32 bit float metre) or "16UC1" (16 bit integer millimetre) -->
   <arg name="color_enabled"               default="true" />           <!-- Enable or disable the color camera -->
   <arg name="color_format"                default="bgra" />           <!-- The format of RGB camera. Valid options: bgra, jpeg -->
   <arg name="color_resolution"            default="1536P" />          <!-- Resolution at which to run the color camera. Valid options: 720P, 1080P, 1440P, 1536P, 2160P, 3072P -->
-  <arg name="fps"                         default="5" />              <!-- FPS to run both cameras at. Valid options are 5, 15, and 30 -->
+  <arg name="fps"                         default="30" />              <!-- FPS to run both cameras at. Valid options are 5, 15, and 30 -->
   <arg name="point_cloud"                 default="false" />          <!-- Generate a point cloud from depth data. Requires depth_enabled -->
   <arg name="rgb_point_cloud"             default="false" />          <!-- Colorize the point cloud using the RBG camera. Requires color_enabled and depth_enabled -->
   <arg name="point_cloud_in_depth_frame"  default="false" />          <!-- Whether the RGB pointcloud is rendered in the depth frame (true) or RGB frame (false). Will either match the resolution of the depth camera (true) or the RGB camera (false). -->
@@ -50,6 +50,8 @@
   <arg name="sensor_sn"                   default="" />               <!-- Sensor serial number. If none provided, the first sensor will be selected -->
   <arg name="recording_file"              default="" />               <!-- Absolute path to a mkv recording file which will be used with the playback api instead of opening a device -->
   <arg name="recording_loop_enabled"      default="false" />          <!-- If set to true the recording file will rewind the beginning once end of file is reached -->
+  <arg name="body_tracking_enabled"           default="true" />  <!-- If set to true the joint positions will be published as marker arrays -->
+  <arg name="body_tracking_smoothing_factor"  default="0.0" />    <!-- Set between 0 for no smoothing and 1 for full smoothing -->
   <arg name="calibration_url"             default="" />               <!-- Load intrinsic calibration from specific URL (default: "file://$HOME/.ros/camera_info/"") -->
   <arg name="rescale_ir_to_mono8"         default="true" />           <!-- Whether to rescale the IR image to an 8-bit monochrome image for visualization and further processing. A scaling factor (ir_mono8_scaling_factor) is applied. -->
   <arg name="ir_mono8_scaling_factor"     default="1.0" />            <!-- Scaling factor to apply when converting IR to mono8 (see rescale_ir_to_mono8). If using illumination, use the value 0.5-1. If using passive IR, use 10. -->
@@ -97,6 +99,8 @@
       <param name="tf_prefix"                     value="$(arg tf_prefix)" />
       <param name="recording_file"                value="$(arg recording_file)" />
       <param name="recording_loop_enabled"        value="$(arg recording_loop_enabled)" />
+      <param name="body_tracking_enabled"           type="bool"   value="$(arg body_tracking_enabled)" />
+      <param name="body_tracking_smoothing_factor"  type="double" value="$(arg body_tracking_smoothing_factor)" />
       <param name="calibration_url"               value="$(arg calibration_url)" />
       <param name="rescale_ir_to_mono8"           value="$(arg rescale_ir_to_mono8)" />
       <param name="ir_mono8_scaling_factor"       value="$(arg ir_mono8_scaling_factor)" />
